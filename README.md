@@ -235,6 +235,12 @@ python verify.py                     # the full installation health check
 
 The suite covers the bounded interpreter, the silent assessment layer, the autonomy boundary (routine outcomes never escalate; the three gates always do), HITL resolution semantics, SQLite state mutations, non-blocking background execution, provider fallback/mock modes, and the full curriculum-mission pipeline.
 
+## Technical Architecture
+
+![IdentAI Runtime Architecture](docs/architecture.png)
+
+> **Interactive Blueprint:** View [`docs/architecture.html`](docs/architecture.html) for interactive node exploration, animated data-flow pulses, and boundary inspection.
+
 ## License
 
 MIT — see [LICENSE](LICENSE). The license is also declared in the repository **About** section.

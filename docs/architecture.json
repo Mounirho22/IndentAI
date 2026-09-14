@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "IdentAI Runtime Boundaries & Agent Architecture",
+    "visual_preset": "blueprint",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "silent-pipeline",
+        "label": "Silent Evaluation Pipeline",
+        "focus": ["clients", "agentcore", "gateway", "evaluator", "interpreter", "boundary", "ledger"],
+        "note": "Deterministic background evaluation and autonomous commits with zero human attention."
+      },
+      {
+        "id": "hitl-escalation",
+        "label": "HITL Decision Briefs",
+        "focus": ["boundary", "hitl", "strands", "bedrock"],
+        "note": "Pauses exclusively on 3 judgment gates to synthesize grounded briefs via Strands and Bedrock."
+      },
+      {
+        "id": "runtime-boundaries",
+        "label": "AgentCore & Cloud Boundaries",
+        "focus": ["clients", "agentcore", "strands", "bedrock"],
+        "note": "Isolation between external clients, AgentCore container runtime, and Bedrock foundation models."
+      }
+    ]
+  },
+  "components": [
+    { "id": "clients", "type": "external", "label": "Learners & Mentors", "sublabel": "Browser / API", "pos": [35, 300], "size": [130, 60] },
+    { "id": "agentcore", "type": "cloud", "label": "Bedrock AgentCore", "sublabel": "Container Runtime", "pos": [229, 300], "size": [130, 60], "tag": "Port 8080" },
+    { "id": "gateway", "type": "backend", "label": "FastAPI Gateway", "sublabel": "app/main.py", "pos": [423, 300], "size": [130, 60], "tag": "Event Queue" },
+    { "id": "evaluator", "type": "backend", "label": "Evaluation Engine", "sublabel": "Silent Pipeline", "pos": [617, 300], "size": [130, 60], "tag": "Deterministic" },
+    { "id": "interpreter", "type": "backend", "label": "Bounded Sandbox", "sublabel": "5000-Step Cap", "pos": [617, 470], "size": [130, 60], "tag": "AST Engine" },
+    { "id": "boundary", "type": "security", "label": "Autonomy Gate", "sublabel": "decide_autonomy()", "pos": [811, 300], "size": [130, 60], "tag": "The 3 Gates" },
+    { "id": "ledger", "type": "database", "label": "SQLite Ledger", "sublabel": "data/lessons.db", "pos": [811, 470], "size": [130, 60], "tag": "Atomic Claim" },
+    { "id": "hitl", "type": "security", "label": "HITL Review Desk", "sublabel": "Decision Brief", "pos": [811, 130], "size": [130, 60], "tag": "Human Gate" },
+    { "id": "strands", "type": "backend", "label": "Strands Agents SDK", "sublabel": "strands.Agent", "pos": [1005, 130], "size": [130, 60], "tag": "Tool Routing" },
+    { "id": "bedrock", "type": "cloud", "label": "Amazon Bedrock", "sublabel": "Claude Sonnet", "pos": [1199, 130], "size": [130, 60], "tag": "BedrockModel" }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "AWS Bedrock Cloud Foundation",
+      "wraps": ["bedrock"],
+      "pad": 16
+    },
+    {
+      "kind": "security-group",
+      "label": "Bedrock AgentCore Container Runtime Boundary",
+      "wraps": ["agentcore", "gateway", "evaluator", "interpreter", "boundary", "ledger", "hitl", "strands"],
+      "pad": 20
+    }
+  ],
+  "connections": [
+    { "id": "clients-to-agentcore", "from": "clients", "to": "agentcore", "label": "events", "variant": "emphasis" },
+    { "id": "agentcore-to-gateway", "from": "agentcore", "to": "gateway", "label": "payload" },
+    { "id": "gateway-to-evaluator", "from": "gateway", "to": "evaluator", "label": "queue" },
+    { "id": "evaluator-to-interpreter", "from": "evaluator", "to": "interpreter", "label": "sandboxed AST", "labelDy": 24 },
+    { "id": "evaluator-to-boundary", "from": "evaluator", "to": "boundary", "label": "claims" },
+    { "id": "boundary-to-ledger", "from": "boundary", "to": "ledger", "label": "commit", "variant": "emphasis", "labelDy": 24 },
+    { "id": "boundary-to-hitl", "from": "boundary", "to": "hitl", "label": "3 gates", "variant": "security" },
+    { "id": "hitl-to-strands", "from": "hitl", "to": "strands", "label": "brief", "variant": "emphasis" },
+    { "id": "strands-to-bedrock", "from": "strands", "to": "bedrock", "label": "Converse" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Bedrock AgentCore Runtime",
+      "items": [
+        "Containerized linux/amd64 runtime with non-root security",
+        "Dual-mode: long-running FastAPI server or one-shot task mode",
+        "InvokeAgentRuntime outputs AUTONOMOUS_COMPLETION or HUMAN_DECISION_REQUIRED"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Deterministic Local Evaluation",
+      "items": [
+        "Zero-cost keyword AST analysis and 5,000-step bounded pseudo-code execution",
+        "Hallucination tripwire flags contradictions between claims and interpreter output",
+        "decide_autonomy() commits routine passes and failures directly to SQLite"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Strands SDK & Human-in-the-Loop",
+      "items": [
+        "Surfaces exclusively on 3 triggers: stuck_loop, hallucination_risk, permission_gate",
+        "Strands Agent drives tool routing with durable AgentState and FileSessionManager",
+        "InterventionHandler strictly gates tools until volunteer mentor submits resolution"
+      ]
+    }
+  ]
+}
