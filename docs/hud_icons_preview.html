@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HUD icon preview — animated timer / shield-check / user-check / package-check</title>
+<!-- Standalone preview of the animated HUD icons now embedded in main.py.
+     Hover a card to replay the draw-in animation. Delete this file when done. -->
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --text: #0a0a0a;
+    --border: rgba(0, 0, 0, 0.22);
+    --border-soft: rgba(0, 0, 0, 0.08);
+    --wash: #fafafa;
+  }
+  body {
+    margin: 0;
+    padding: 48px 24px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 18px; letter-spacing: -0.02em; margin: 0 0 6px; }
+  p.note { margin: 0 0 28px; font-size: 13px; color: rgba(0,0,0,0.55); }
+
+  /* ===== copied from main.py: Impact HUD ===== */
+  .impact-hud {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin: 28px 0 34px;
+  }
+  @media (max-width: 880px) {
+    .impact-hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 520px) {
+    .impact-hud { grid-template-columns: 1fr; }
+  }
+  .hud-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    background: var(--wash);
+    transition: border-color .18s ease;
+  }
+  .hud-card:hover { border-color: var(--border); }
+  .hud-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    line-height: 1;
+    color: var(--text); /* the icons stroke with currentColor */
+  }
+  .hud-icon svg { display: block; }
+  .hud-data { display: flex; flex-direction: column; gap: 2px; }
+  .hud-val {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .hud-lbl { font-size: 11px; color: rgba(0,0,0,0.5); }
+
+  /* Animated HUD icons — vanilla ports of the supplied motion/react
+     components: the timer from AnimateIcons (lucide geometry), the
+     shield-check from heroicons-animated, and lucide user-check /
+     package-check animated in the same draw-in style. Every animated
+     stroke carries pathLength="1", so drawing it is just a
+     stroke-dashoffset sweep from 1 to 0. The script toggles .is-drawing
+     on card hover and drops it on leave — the same normal/animate pair
+     the originals got from motion's variants. */
+  .hud-icon .hud-draw {
+    stroke-dasharray: 1px;
+    stroke-dashoffset: 0;
+  }
+  .hud-icon.is-drawing .hud-draw { animation: hud-draw-in 0.4s ease-in-out backwards; }
+  /* Timer: dial redraws, top button pops open, hand swings in late —
+     durations, delays and easings lifted from the original variants. */
+  .hud-icon.is-drawing .hud-timer-dial {
+    animation: hud-draw-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+  }
+  .hud-icon.is-drawing .hud-timer-btn {
+    transform-box: view-box;
+    transform-origin: 12px 2px;
+    animation: hud-pop-x 0.3s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  .hud-icon.is-drawing .hud-timer-hand {
+    transform-box: view-box;
+    transform-origin: 12px 14px;
+    animation: hud-hand-swing 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) 0.5s backwards;
+  }
+  /* Shield-check: the shield outline stays put, only the tick redraws. */
+  .hud-icon.is-drawing .hud-shield-check { animation: hud-draw-in 0.4s ease-in-out backwards; }
+  /* User-check: head, shoulders, then the tick, staggered like the rest. */
+  .hud-icon.is-drawing .hud-user-head { animation: hud-draw-in 0.4s ease-in-out backwards; }
+  .hud-icon.is-drawing .hud-user-body { animation: hud-draw-in 0.4s ease-in-out 0.12s backwards; }
+  .hud-icon.is-drawing .hud-user-check { animation: hud-draw-in 0.35s ease-in-out 0.42s backwards; }
+  /* Package-check: box, front flap, spine and tape, then the tick. */
+  .hud-icon.is-drawing .hud-pkg-box { animation: hud-draw-in 0.5s ease-in-out backwards; }
+  .hud-icon.is-drawing .hud-pkg-flap { animation: hud-draw-in 0.35s ease-in-out 0.3s backwards; }
+  .hud-icon.is-drawing .hud-pkg-line { animation: hud-draw-in 0.3s ease-in-out 0.45s backwards; }
+  .hud-icon.is-drawing .hud-pkg-tape { animation: hud-draw-in 0.3s ease-in-out 0.55s backwards; }
+  .hud-icon.is-drawing .hud-pkg-check { animation: hud-draw-in 0.35s ease-in-out 0.65s backwards; }
+
+  @keyframes hud-draw-in {
+    from { stroke-dashoffset: 1px; opacity: 0; }
+    to   { stroke-dashoffset: 0; opacity: 1; }
+  }
+  @keyframes hud-pop-x {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+  @keyframes hud-hand-swing {
+    0%   { transform: rotate(-50deg); opacity: 0; }
+    60%  { transform: rotate(15deg); opacity: 1; }
+    100% { transform: rotate(0deg); opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hud-icon.is-drawing svg .hud-draw,
+    .hud-icon.is-drawing svg .hud-timer-btn,
+    .hud-icon.is-drawing svg .hud-timer-hand { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Impact HUD — animated icons</h1>
+  <p class="note">Hover any card to replay its draw-in animation (same trigger as the original motion/react components).</p>
+
+  <div class="impact-hud" id="impact-hud">
+    <div class="hud-card">
+      <div class="hud-icon" aria-hidden="true">
+        <!-- Animated timer — ported from AnimateIcons / Lucide (MIT, @avijit07x) -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle class="hud-draw hud-timer-dial" cx="12" cy="14" r="8" pathLength="1"/>
+          <line class="hud-timer-btn" x1="10" y1="2" x2="14" y2="2"/>
+          <line class="hud-timer-hand" x1="12" y1="14" x2="15" y2="11"/>
+        </svg>
+      </div>
+      <div class="hud-data">
+        <span class="hud-val" id="hud-time-saved">&mdash;</span>
+        <span class="hud-lbl">Teacher Workload Saved (est.)</span>
+      </div>
+    </div>
+    <div class="hud-card">
+      <div class="hud-icon" aria-hidden="true">
+        <!-- Animated shield-check — ported from heroicons-animated (MIT, @aniket-508) -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2.71411C9.8495 4.75073 6.94563 5.99986 3.75 5.99986C3.69922 5.99986 3.64852 5.99955 3.59789 5.99892C3.2099 7.17903 3 8.43995 3 9.74991C3 15.3414 6.82432 20.0397 12 21.3719C17.1757 20.0397 21 15.3414 21 9.74991C21 8.43995 20.7901 7.17903 20.4021 5.99892C20.3515 5.99955 20.3008 5.99986 20.25 5.99986C17.0544 5.99986 14.1505 4.75073 12 2.71411Z"/>
+          <path class="hud-draw hud-shield-check" d="M9 12.7498L11.25 14.9998L15 9.74985" pathLength="1"/>
+        </svg>
+      </div>
+      <div class="hud-data">
+        <span class="hud-val" id="hud-auto-repaired">&mdash;</span>
+        <span class="hud-lbl">Defects Auto-Repaired</span>
+      </div>
+    </div>
+    <div class="hud-card">
+      <div class="hud-icon" aria-hidden="true">
+        <!-- Animated user-check — lucide geometry, same draw-in style -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle class="hud-draw hud-user-head" cx="9" cy="7" r="4" pathLength="1"/>
+          <path class="hud-draw hud-user-body" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" pathLength="1"/>
+          <polyline class="hud-draw hud-user-check" points="16 11 18 13 22 9" pathLength="1"/>
+        </svg>
+      </div>
+      <div class="hud-data">
+        <span class="hud-val" id="hud-human-decisions">&mdash;</span>
+        <span class="hud-lbl">Escalated for Teacher Decision</span>
+      </div>
+    </div>
+    <div class="hud-card">
+      <div class="hud-icon" aria-hidden="true">
+        <!-- Animated package-check — lucide geometry, same draw-in style -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path class="hud-draw hud-pkg-box" d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" pathLength="1"/>
+          <path class="hud-draw hud-pkg-tape" d="m7.5 4.27 9 5.15" pathLength="1"/>
+          <polyline class="hud-draw hud-pkg-flap" points="3.29 7 12 12 20.71 7" pathLength="1"/>
+          <line class="hud-draw hud-pkg-line" x1="12" y1="22" x2="12" y2="12" pathLength="1"/>
+          <path class="hud-draw hud-pkg-check" d="m16 16 2 2 4-4" pathLength="1"/>
+        </svg>
+      </div>
+      <div class="hud-data">
+        <span class="hud-val" id="hud-materials-count">&mdash;</span>
+        <span class="hud-lbl">Materials from Real Missions</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  function reducedMotion() {
+    return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+
+  /* Animated HUD icons: hovering a card replays the draw-in animation;
+     leaving snaps the icon back to its fully-drawn state. */
+  Array.prototype.forEach.call(document.querySelectorAll(".hud-card"), function (card) {
+    var icon = card.querySelector(".hud-icon");
+    if (!icon) return;
+    card.addEventListener("mouseenter", function () {
+      if (reducedMotion()) return;
+      icon.classList.remove("is-drawing");
+      void icon.offsetWidth; /* force a reflow so the CSS animations restart */
+      icon.classList.add("is-drawing");
+    });
+    card.addEventListener("mouseleave", function () {
+      icon.classList.remove("is-drawing");
+    });
+  });
+
+  /* Fake a first population so the preview shows values like the real desk. */
+  document.getElementById("hud-time-saved").textContent = "6.5 hrs";
+  document.getElementById("hud-auto-repaired").textContent = "18";
+  document.getElementById("hud-human-decisions").textContent = "4";
+  document.getElementById("hud-materials-count").textContent = "27";
+})();
+</script>
+</body>
+</html>

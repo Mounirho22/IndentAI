@@ -1,0 +1,90 @@
+# ===========================================================================
+# CurriculumAI — .gitignore
+# Secrets first, then language caches, runtime data, IDE noise, and the
+# internal development-skills library that is not part of the shipped agent.
+# ===========================================================================
+
+# Secrets — never commit. The Bedrock/Gemini credentials live in .env.
+.env
+.env.*
+!.env.example
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# SQLite runtime data — every database is disposable/regenerable, including
+# the seeded lessons.db, the scratch DBs from the verification suite and the
+# demo, and their transaction journals / WAL sidecars.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+lessons.db
+data/lessons.db
+verify_*.db
+demo_*.db
+*.json.tmp
+*.log
+
+# Strands agent session memory (FileSessionManager persists here)
+data/agent_sessions/
+
+# Editors / IDEs / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node tooling (the runtime does not need it)
+node_modules/
+
+# Internal development-skills library — local agent tooling configuration,
+# deliberately segregated so the audited tree is only CurriculumAI source.
+.agents/
+.local_agent_skills/
+
+# Demo / screen-recording artifacts
+*.webm
+*.mp4
+
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+*.db
+data/agent_sessions/
+
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+*.db
+data/agent_sessions/
+
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+*.db
+data/agent_sessions/
