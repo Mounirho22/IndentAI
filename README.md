@@ -235,6 +235,12 @@ python verify.py                     # the full installation health check
 
 The suite covers the bounded interpreter, the silent assessment layer, the autonomy boundary (routine outcomes never escalate; the three gates always do), HITL resolution semantics, SQLite state mutations, non-blocking background execution, provider fallback/mock modes, and the full curriculum-mission pipeline.
 
+## Strands Agents Architecture
+IndentAI leverages a multi-strand agent model:
+1. Generation Strand (Amazon Bedrock Nova Pro)
+2. Verification & AST Audit Strand (Autonomous auto-repair)
+3. Escalation Strand (Teacher Review Desk)
+
 ## Technical Architecture
 
 ![IdentAI Runtime Architecture](docs/architecture.png)
